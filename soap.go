@@ -36,10 +36,11 @@ func (soap SOAP) SendRequest(xaddr string) (mxj.Map, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	if soap.User != "" {
-		urlXAddr.User = url.UserPassword(soap.User, soap.Password)
-	}
+	/*
+		if soap.User != "" {
+			urlXAddr.User = url.UserPassword(soap.User, soap.Password)
+		}
+	*/
 
 	// Create HTTP request
 	buffer := bytes.NewBuffer([]byte(request))
@@ -105,7 +106,8 @@ func (soap SOAP) createRequest() string {
 }
 
 func (soap SOAP) createUserToken() string {
-	nonce := uuid.NewV4().Bytes()
+	u, _ := uuid.NewV4()
+	nonce := u.Bytes()
 	nonce64 := base64.StdEncoding.EncodeToString(nonce)
 	timestamp := time.Now().Add(soap.TokenAge).UTC().Format(time.RFC3339)
 	token := string(nonce) + timestamp + soap.Password
