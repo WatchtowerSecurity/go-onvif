@@ -1,6 +1,7 @@
 package onvif
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -39,6 +40,54 @@ func (device Device) GetInformation() (DeviceInformation, error) {
 		result.FirmwareVersion = interfaceToString(mapInfo["FirmwareVersion"])
 		result.SerialNumber = interfaceToString(mapInfo["SerialNumber"])
 		result.HardwareID = interfaceToString(mapInfo["HardwareId"])
+	}
+
+	return result, nil
+}
+
+// GetSystemDateAndTime get date/time of ONVIF camera
+func (device Device) GetSystemDateAndTime() (SystemDateAndTime, error) {
+	// Create SOAP
+	soap := SOAP{
+		Body:     "<tds:GetSystemDateAndTime/>",
+		XMLNs:    deviceXMLNs,
+		User:     device.User,
+		Password: device.Password,
+	}
+
+	// Send SOAP request
+	response, err := soap.SendRequest(device.XAddr)
+	if err != nil {
+		return SystemDateAndTime{}, err
+	}
+
+	// Parse response to interface
+	dateAndTime, err := response.ValueForPath("Envelope.Body.GetSystemDateAndTimeResponse.SystemDateAndTime")
+	if err != nil {
+		return SystemDateAndTime{}, err
+	}
+	fmt.Printf("%v", dateAndTime)
+	// Parse interface to struct
+	result := SystemDateAndTime{}
+	if mapInfo, ok := dateAndTime.(map[string]interface{}); ok {
+		result.DateTimeType = interfaceToString(mapInfo["DateTimeType"])
+		result.DaylightSavings = interfaceToBool(mapInfo["DaylightSavings"])
+
+		timeZone := TimeZone{}
+		if mapTZ, ok := mapInfo["TimeZone"].(map[string]interface{}); ok {
+			timeZone.TZ = interfaceToString(mapTZ["TZ"])
+		}
+		result.TimeZone = timeZone
+
+		utcDate := Date{}
+		if utcDateMap, ok := mapInfo["UTCDateTime"].(UTCDateTime); ok {
+			utcDate.Year = utcDateMap.Date.Year
+			utcDate.Month = utcDateMap.Date.Month
+			utcDate.Day = utcDateMap.Date.Day
+
+		}
+		fmt.Printf("%v", utcDate.Year)
+		result.UTCDateTime.Date = utcDate
 	}
 
 	return result, nil

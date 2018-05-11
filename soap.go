@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"errors"
+	//"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -45,6 +46,9 @@ func (soap SOAP) SendRequest(xaddr string) (mxj.Map, error) {
 	// Create HTTP request
 	buffer := bytes.NewBuffer([]byte(request))
 	req, err := http.NewRequest("POST", urlXAddr.String(), buffer)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Set("Content-Type", "application/soap+xml")
 	req.Header.Set("Charset", "utf-8")
 
@@ -66,7 +70,7 @@ func (soap SOAP) SendRequest(xaddr string) (mxj.Map, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	//fmt.Printf("%v", mapXML)
 	// Check if SOAP returns fault
 	fault, _ := mapXML.ValueForPathString("Envelope.Body.Fault.Reason.Text.#text")
 	if fault != "" {
