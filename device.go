@@ -1,7 +1,8 @@
 package onvif
 
 import (
-	"fmt"
+	//"fmt"
+
 	"strings"
 )
 
@@ -66,7 +67,7 @@ func (device Device) GetSystemDateAndTime() (SystemDateAndTime, error) {
 	if err != nil {
 		return SystemDateAndTime{}, err
 	}
-	fmt.Printf("%v", dateAndTime)
+
 	// Parse interface to struct
 	result := SystemDateAndTime{}
 	if mapInfo, ok := dateAndTime.(map[string]interface{}); ok {
@@ -80,16 +81,38 @@ func (device Device) GetSystemDateAndTime() (SystemDateAndTime, error) {
 		result.TimeZone = timeZone
 
 		utcDate := Date{}
-		if utcDateMap, ok := mapInfo["UTCDateTime"].(UTCDateTime); ok {
-			utcDate.Year = utcDateMap.Date.Year
-			utcDate.Month = utcDateMap.Date.Month
-			utcDate.Day = utcDateMap.Date.Day
-
+		utcTime := Time{}
+		if utcDateTimeMap, ok := mapInfo["UTCDateTime"].(map[string]interface{}); ok {
+			if utcDateMap, ok := utcDateTimeMap["Date"].(map[string]interface{}); ok {
+				utcDate.Year = interfaceToInt(utcDateMap["Year"])
+				utcDate.Month = interfaceToInt(utcDateMap["Month"])
+				utcDate.Day = interfaceToInt(utcDateMap["Day"])
+				if utcTimeMap, ok := utcDateTimeMap["Time"].(map[string]interface{}); ok {
+					utcTime.Hour = interfaceToInt(utcTimeMap["Hour"])
+					utcTime.Minute = interfaceToInt(utcTimeMap["Minute"])
+					utcTime.Second = interfaceToInt(utcTimeMap["Second"])
+				}
+			}
 		}
-		fmt.Printf("%v", utcDate.Year)
+		localDate := Date{}
+		localTime := Time{}
+		if localDateTimeMap, ok := mapInfo["LocalDateTime"].(map[string]interface{}); ok {
+			if localDateMap, ok := localDateTimeMap["Date"].(map[string]interface{}); ok {
+				localDate.Year = interfaceToInt(localDateMap["Year"])
+				localDate.Month = interfaceToInt(localDateMap["Month"])
+				localDate.Day = interfaceToInt(localDateMap["Day"])
+				if localTimeMap, ok := localDateTimeMap["Time"].(map[string]interface{}); ok {
+					localTime.Hour = interfaceToInt(localTimeMap["Hour"])
+					localTime.Minute = interfaceToInt(localTimeMap["Minute"])
+					localTime.Second = interfaceToInt(localTimeMap["Second"])
+				}
+			}
+		}
 		result.UTCDateTime.Date = utcDate
+		result.UTCDateTime.Time = utcTime
+		result.LocalDateTime.Date = localDate
+		result.LocalDateTime.Time = localTime
 	}
-
 	return result, nil
 }
 

@@ -1,7 +1,7 @@
 - [X] Camera discovery
 - [ ] OnvifServiceDevice
   - [X] getInformation
-  - [ ] getSystemDateAndTime
+  - [X] getSystemDateAndTime
   - [X] getCapabilities
   - [X] getDiscoveryMode
   - [X] getScopes
