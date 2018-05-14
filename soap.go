@@ -5,7 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"errors"
-	//"fmt"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -70,7 +70,7 @@ func (soap SOAP) SendRequest(xaddr string) (mxj.Map, error) {
 	if err != nil {
 		return nil, err
 	}
-	//fmt.Printf("%v", mapXML)
+	fmt.Printf("%v", mapXML)
 	// Check if SOAP returns fault
 	fault, _ := mapXML.ValueForPathString("Envelope.Body.Fault.Reason.Text.#text")
 	if fault != "" {

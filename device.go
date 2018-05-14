@@ -254,3 +254,53 @@ func (device Device) GetHostname() (HostnameInformation, error) {
 
 	return hostnameInfo, nil
 }
+
+// GetDNS fetch DNS config of an ONVIF camera
+func (device Device) GetDNS() (DNSInformation, error) {
+	// Create SOAP
+	soap := SOAP{
+		Body:     "<tds:GetDNS/>",
+		XMLNs:    deviceXMLNs,
+		User:     device.User,
+		Password: device.Password,
+	}
+
+	// Send SOAP request
+	response, err := soap.SendRequest(device.XAddr)
+	if err != nil {
+		return DNSInformation{}, err
+	}
+
+	// Parse response to interface
+	ifaceDNSInfo, err := response.ValueForPath("Envelope.Body.GetDNSResponse.DNSInformation")
+	if err != nil {
+		return DNSInformation{}, err
+	}
+
+	// Parse interface to struct
+	dnsInfo := DNSInformation{}
+	if mapDNSInfo, ok := ifaceDNSInfo.(map[string]interface{}); ok {
+		dnsInfo.FromDHCP = interfaceToBool(mapDNSInfo["FromDHCP"])
+		this := mapDNSInfo["SearchDomain"]
+
+		switch t := this.(type) {
+		case string:
+			dnsInfo.SearchDomain = interfaceToString(mapDNSInfo["SearchDomain"])
+		case []string:
+			dnsInfo.SearchDomain = mapDNSInfo["SearchDomain"]
+		case []interface{}:
+			var domains []string
+			for _, domain := range t {
+				domains = append(domains, interfaceToString(domain))
+
+			}
+			dnsInfo.SearchDomain = domains
+		}
+	}
+	//dnsInfo.DNSFromDHCP = interfaceToString(mapDNSInfo["DNSFromDHCP"])
+	//dnsInfo.SearchDomain = interfaceToString(mapDNSInfo["SearchDomain"])
+
+	//dnsInfo.DNSManual = interfaceToString(mapDNSInfo["DNSManual"])
+
+	return dnsInfo, nil
+}

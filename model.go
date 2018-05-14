@@ -79,6 +79,20 @@ type HostnameInformation struct {
 	FromDHCP bool
 }
 
+// DNS contains DNS info of an ONVIF camera
+type DNS struct {
+	Type        string
+	IPv4Address string
+}
+
+// DNSInformation contains DNS info of an ONVIF camera
+type DNSInformation struct {
+	FromDHCP     bool
+	SearchDomain interface{}
+	DNSFromDHCP  DNS
+	DNSManual    DNS
+}
+
 // MediaBounds contains resolution of a video media
 type MediaBounds struct {
 	Height int
